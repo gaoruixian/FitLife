@@ -3,6 +3,9 @@ package com.example.fitlife;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+/**
+ * 封装提醒相关的 SharedPreferences 读写，避免 key 散落在多个类里。
+ */
 final class ReminderPreferences {
     private static final String NAME = "fitlife_reminders";
     private static final String EXERCISE_ITEMS = "exercise_items";
@@ -15,6 +18,9 @@ final class ReminderPreferences {
         return context.getSharedPreferences(NAME, Context.MODE_PRIVATE);
     }
 
+    /**
+     * 首次启动时写入默认提醒时间和默认运动项目。
+     */
     static void ensureDefaults(SharedPreferences preferences) {
         if (!preferences.contains(hourKey(ReminderType.EXERCISE))) {
             preferences.edit()
@@ -30,6 +36,7 @@ final class ReminderPreferences {
     }
 
     static int getHour(SharedPreferences preferences, ReminderType type) {
+        // 即使旧版本没有写入默认值，也能用兜底时间正常显示和调度。
         return preferences.getInt(hourKey(type), type == ReminderType.EXERCISE ? 19 : 12);
     }
 
@@ -65,6 +72,7 @@ final class ReminderPreferences {
     }
 
     private static String hourKey(ReminderType type) {
+        // 每种提醒使用自己的 key 前缀，避免运动和饮食配置互相覆盖。
         return type.key + "_hour";
     }
 

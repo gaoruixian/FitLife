@@ -74,6 +74,7 @@
             android:orientation="vertical"
             android:padding="18dp">
 
+            <!-- 每个运动项目：左侧图标，中间名称，右侧勾选框；点击整行查看运动量建议。 -->
             <LinearLayout
                 android:id="@+id/walk_row"
                 android:layout_width="match_parent"

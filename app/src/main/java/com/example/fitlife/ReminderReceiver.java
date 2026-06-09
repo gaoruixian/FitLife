@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 
+/**
+ * 接收系统闹钟广播，展示通知，并安排下一次每日提醒。
+ */
 public class ReminderReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "daily_reminders";
 
@@ -20,10 +23,12 @@ public class ReminderReceiver extends BroadcastReceiver {
         }
 
         showNotification(context, type);
+        // AlarmManager 的一次性闹钟触发后不会自动重复，这里重新安排下一天。
         new ReminderScheduler(context).scheduleDaily(type);
     }
 
     private ReminderType readType(Intent intent) {
+        // 广播中带有提醒类型；解析失败时直接忽略，避免错误通知。
         if (intent == null) {
             return null;
         }
@@ -46,6 +51,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         createChannel(manager);
 
+        // 点击通知回到首页，方便用户继续调整提醒。
         Intent openAppIntent = new Intent(context, MainActivity.class);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -70,12 +76,14 @@ public class ReminderReceiver extends BroadcastReceiver {
         if (type != ReminderType.EXERCISE) {
             return type.notificationText;
         }
+        // 运动提醒使用用户在项目页勾选的内容，让提醒更个性化。
         SharedPreferences preferences = ReminderPreferences.open(context);
         return "今天可以做：" + ReminderPreferences.getExerciseItems(preferences);
     }
 
     private void createChannel(NotificationManager manager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Android 8+ 必须先创建通知渠道，否则通知不会显示。
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "每日提醒",

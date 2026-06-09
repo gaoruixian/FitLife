@@ -37,6 +37,7 @@
             android:background="@drawable/hero_card_background"
             android:padding="22dp">
 
+            <!-- 首页顶部绿色摘要卡，展示今日计划和两个提醒时间。 -->
             <ImageView
                 android:layout_width="148dp"
                 android:layout_height="116dp"
@@ -165,6 +166,7 @@
             android:orientation="horizontal"
             android:padding="18dp">
 
+            <!-- 点击整张运动卡片进入运动项目选择页；右侧开关用于快速启停提醒。 -->
             <ImageView
                 android:layout_width="54dp"
                 android:layout_height="54dp"

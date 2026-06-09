@@ -16,6 +16,9 @@ import android.widget.Toast;
 
 import java.util.Locale;
 
+/**
+ * App 首页，负责展示运动/饮食提醒状态，并承接用户的主要操作。
+ */
 public class MainActivity extends Activity {
     private static final int REQUEST_NOTIFICATIONS = 1001;
 
@@ -32,6 +35,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 首页和提醒接收器共用同一份本地配置，保证开关、时间和运动项目保持同步。
         reminderScheduler = new ReminderScheduler(this);
         preferences = ReminderPreferences.open(this);
 
@@ -45,6 +49,7 @@ public class MainActivity extends Activity {
         Button exerciseTimeButton = findViewById(R.id.exercise_time_button);
         Button dietTimeButton = findViewById(R.id.diet_time_button);
 
+        // 开关只负责启停提醒；具体提醒时间由时间选择器设置。
         exerciseSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             ReminderPreferences.setEnabled(preferences, ReminderType.EXERCISE, isChecked);
             updateReminder(ReminderType.EXERCISE);
@@ -57,6 +62,7 @@ public class MainActivity extends Activity {
 
         exerciseTimeButton.setOnClickListener(v -> showTimePicker(ReminderType.EXERCISE));
         dietTimeButton.setOnClickListener(v -> showTimePicker(ReminderType.DIET));
+        // 运动卡片点击进入项目选择页，时间按钮仍单独负责设置提醒时间。
         exerciseCard.setOnClickListener(v -> openExerciseOptions());
         exerciseMetricCard.setOnClickListener(v -> openExerciseOptions());
 
@@ -69,10 +75,14 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (preferences != null) {
+            // 从运动项目页返回时刷新“已选项目”和开关状态。
             renderState();
         }
     }
 
+    /**
+     * 弹出 24 小时时间选择器；选定时间后自动开启对应提醒。
+     */
     private void showTimePicker(ReminderType type) {
         int hour = ReminderPreferences.getHour(preferences, type);
         int minute = ReminderPreferences.getMinute(preferences, type);
@@ -94,6 +104,7 @@ public class MainActivity extends Activity {
 
     private void updateReminder(ReminderType type) {
         if (ReminderPreferences.isEnabled(preferences, type)) {
+            // AlarmManager 的闹钟在触发后会由 Receiver 再次安排下一天。
             reminderScheduler.scheduleDaily(type);
             Toast.makeText(this, type.displayName + "提醒已开启", Toast.LENGTH_SHORT).show();
         } else {
@@ -106,6 +117,7 @@ public class MainActivity extends Activity {
     private void renderState() {
         boolean exerciseEnabled = ReminderPreferences.isEnabled(preferences, ReminderType.EXERCISE);
         boolean dietEnabled = ReminderPreferences.isEnabled(preferences, ReminderType.DIET);
+        // 仅在状态不一致时更新 Switch，避免 renderState 反复触发监听器和 Toast。
         if (exerciseSwitch.isChecked() != exerciseEnabled) {
             exerciseSwitch.setChecked(exerciseEnabled);
         }
@@ -131,6 +143,7 @@ public class MainActivity extends Activity {
     }
 
     private void requestNotificationPermissionIfNeeded() {
+        // Android 13+ 需要运行时申请通知权限，否则提醒能触发但通知不会展示。
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATIONS);

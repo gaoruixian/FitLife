@@ -10,6 +10,9 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * 运动项目选择页，支持勾选适合自己的运动，并查看每项运动的运动量建议。
+ */
 public class ExerciseOptionsActivity extends Activity {
     private SharedPreferences preferences;
     private CheckBox walkCheckBox;
@@ -29,6 +32,7 @@ public class ExerciseOptionsActivity extends Activity {
         preferences = ReminderPreferences.open(this);
         ReminderPreferences.ensureDefaults(preferences);
 
+        // 页面使用一组 CheckBox 保存用户选择；点击整行则只展示建议，不直接切换选中状态。
         TextView backButton = findViewById(R.id.back_button);
         walkCheckBox = findViewById(R.id.walk_check_box);
         runningCheckBox = findViewById(R.id.running_check_box);
@@ -53,6 +57,9 @@ public class ExerciseOptionsActivity extends Activity {
         saveButton.setOnClickListener(v -> saveSelections());
     }
 
+    /**
+     * 绑定运动项目行点击事件，展示对应运动量建议。
+     */
     private void bindSuggestion(int rowId, int titleId, int suggestionId) {
         View row = findViewById(rowId);
         row.setOnClickListener(v -> new AlertDialog.Builder(this)
@@ -63,6 +70,7 @@ public class ExerciseOptionsActivity extends Activity {
     }
 
     private void renderSelections() {
+        // 当前项目以中文顿号拼接保存，渲染时按项目名称判断是否已选。
         String selected = ReminderPreferences.getExerciseItems(preferences);
         walkCheckBox.setChecked(selected.contains("快走"));
         runningCheckBox.setChecked(selected.contains("慢跑"));
@@ -91,6 +99,7 @@ public class ExerciseOptionsActivity extends Activity {
         }
 
         ReminderPreferences.setExerciseItems(preferences, builder.toString());
+        // 保存运动项目后默认开启运动提醒，让用户设置完即可收到提醒。
         ReminderPreferences.setEnabled(preferences, ReminderType.EXERCISE, true);
         new ReminderScheduler(this).scheduleDaily(ReminderType.EXERCISE);
         Toast.makeText(this, "运动项目已保存", Toast.LENGTH_SHORT).show();
@@ -101,6 +110,7 @@ public class ExerciseOptionsActivity extends Activity {
         if (!checkBox.isChecked()) {
             return;
         }
+        // 通知和首页摘要使用“快走、拉伸”这种可读性更好的展示格式。
         if (builder.length() > 0) {
             builder.append("、");
         }

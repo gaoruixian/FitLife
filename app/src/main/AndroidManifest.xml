@@ -12,6 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- 首页入口：展示提醒状态、设置时间，并跳转到运动项目页。 -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -21,14 +22,17 @@
             </intent-filter>
         </activity>
 
+        <!-- 运动项目选择页：保存用户勾选的运动项目和运动量建议查看入口。 -->
         <activity
             android:name=".ExerciseOptionsActivity"
             android:exported="false" />
 
+        <!-- 接收 AlarmManager 闹钟广播，用于展示每日运动/饮食提醒通知。 -->
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />
 
+        <!-- 手机重启后重新注册已开启的每日提醒。 -->
         <receiver
             android:name=".BootReceiver"
             android:exported="false">
